@@ -1,0 +1,10 @@
+[Unit]
+Description=Auto Temp Control Fan Driver
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/fanctrl.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

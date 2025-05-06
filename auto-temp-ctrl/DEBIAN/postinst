@@ -1,0 +1,4 @@
+#!/bin/bash
+systemctl daemon-reload
+systemctl enable auto-temp-ctrl.service
+systemctl start auto-temp-ctrl.service

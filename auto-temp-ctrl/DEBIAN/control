@@ -1,0 +1,7 @@
+Package: auto-temp-ctrl
+Version: 1.0
+Section: utils
+Priority: optional
+Architecture: all
+Maintainer: Anthony <anthonyma24.development@gmail.com>
+Description: Automatic fan control driver for Orange Pi Zero based on CPU temperature.
