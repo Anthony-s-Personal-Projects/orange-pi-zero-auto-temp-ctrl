@@ -14,6 +14,12 @@ This service will automatically turn on and off the fan based on the CPU tempera
 
 Download the latest `.deb` release from the [Releases](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases) page.
 
+Or
+
+```bash
+curl -L https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/auto-temp-ctrl.deb -o auto-temp-ctrl.deb
+```
+
 Then install with:
 
 ```bash
