@@ -56,13 +56,13 @@ You can also tweak your fan behavior by editing:
 
 ---
 
-## 🔥 Uninstallation (if you ever want to remove it)
+## 🔥 Uninstallation
 
 ```bash
 auto-temp-ctrl uninstall
 ```
 
-This will clean up everything nice and tidy.
+This will clean up everything nicely.
 
 ---
 
@@ -75,7 +75,38 @@ I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner
 
 [📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
 
-You can print your own case for better airflow and protection of your Orange Pi Zero board.
+---
+
+## 📌 Fan Wiring and Circuit Explanation
+
+To safely control the fan using GPIO, a transistor and a flyback diode are used in the circuit.
+
+### 🧠 Why use a Transistor?
+
+GPIO pins can only provide very small currents and can't drive the fan directly.  
+A **NPN Transistor** acts like a switch → controlled by GPIO.
+
+- GPIO High → Transistor ON → Fan runs
+- GPIO Low → Transistor OFF → Fan stops
+
+The resistor (300Ω~1kΩ) limits the current flowing into the transistor's base → protecting GPIO.
+
+### 🛡️ Why use a Flyback Diode?
+
+When the fan turns OFF, it generates a reverse voltage (back EMF).  
+This could damage the transistor or Orange Pi.
+
+A **Flyback Diode** safely diverts this voltage away → protecting your circuit.
+
+### 📊 Full Wiring Diagram
+
+<img src="wiring description.png" alt="Fan Control Wiring Diagram" width="400">
+
+**Pin usage example:**
+
+- VCC-5V (Pin 4) → Fan +
+- GND (Pin 6) → Fan GND via transistor
+- PG6 (Pin 8) → Transistor control (via resistor)
 
 ---
 
