@@ -23,13 +23,15 @@ sudo apt update
 sudo apt install auto-temp-ctrl
 ```
 
-That's it. Your Pi will now smartly manage its fan all on its own.
-
 ---
 
 ## 📦 Alternative Installation (Manual via .deb)
 
 If you prefer the old school way or don't want to add the APT repo:
+
+[📥 Download .deb file](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/auto-temp-ctrl.deb)
+
+Then install with:
 
 ```bash
 sudo dpkg -i auto-temp-ctrl.deb
@@ -64,14 +66,16 @@ This will clean up everything nice and tidy.
 
 ---
 
-## 📦 BONUS! 3D Printable Case
+## 🧰 3D Printable Case (STEP file and design)
 
 Because keeping cool is not just for the CPU 😎.  
 I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner and safer.
 
 <img src="3d model.JPG" alt="3D Case Model" width="400">
 
-You can find the STEP file in this repository or directly in the release assets to print your very own custom case!
+[📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
+
+You can print your own case for better airflow and protection of your Orange Pi Zero board.
 
 ---
 
