@@ -58,7 +58,7 @@ A 3D printable case has been designed for the Orange Pi Zero with the fan mounte
 
 <img src="3d model.JPG" alt="3D Case Model" width="400">
 
-You can find the STEP file inside this repository or download it directly to print your own case for better airflow and protection of your Orange Pi Zero board.
+You can find the STEP file from the [Releases](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases) page and download it directly to print your own case for better airflow and protection of your Orange Pi Zero board.
 
 ## License
 
