@@ -64,19 +64,6 @@ auto-temp-ctrl uninstall
 
 This will clean up everything nicely.
 
----
-
-## 🧰 3D Printable Case (STEP file and design)
-
-Because keeping cool is not just for the CPU 😎.  
-I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner and safer.
-
-<img src="3d model.JPG" alt="3D Case Model" width="400">
-
-[📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
-
----
-
 ## 📌 Fan Wiring and Circuit Explanation
 
 To safely control the fan using GPIO, a transistor and a flyback diode are used in the circuit.
@@ -107,6 +94,19 @@ A **Flyback Diode** safely diverts this voltage away → protecting your circuit
 - VCC-5V (Pin 4) → Fan +
 - GND (Pin 6) → Fan GND via transistor
 - PG6 (Pin 8) → Transistor control (via resistor)
+
+---
+
+---
+
+## 🧰 3D Printable Case (STEP file and design)
+
+Because keeping cool is not just for the CPU 😎.  
+I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner and safer.
+
+<img src="3d model.JPG" alt="3D Case Model" width="400">
+
+[📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
 
 ---
 
