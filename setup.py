@@ -13,8 +13,9 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "auto-temp-gpiod-ctrl=auto_temp_gpiod_ctrl.main:main",
-            "auto_temp_ctrl=auto_temp_gpiod_ctrl.main:main"
+            "auto-temp-gpiod-ctrl=auto_temp_gpiod_ctrl.main:main"
+            # The following alias is deprecated and will be removed in future versions
+            # "auto_temp_ctrl=auto_temp_gpiod_ctrl.main:main"
         ]
     },
     python_requires=">=3.7",

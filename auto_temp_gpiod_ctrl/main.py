@@ -58,7 +58,7 @@ def run_auto_temp_ctrl(
     print_help=False
 ):
     """
-    Main entry point for auto_temp_ctrl, callable from Python code.
+    Main entry point for auto_temp_gpiod_ctrl, callable from Python code.
     Arguments match CLI options.
     """
     if print_help:
