@@ -48,32 +48,35 @@ def print_help():
     """
     print(help_text)
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Run CPU load simulation and temperature‐based GPIO control',
-        add_help=False
-    )
-    parser.add_argument('-i', '--interval', type=float, default=5.0, help='Seconds between temperature checks and table refresh')
-    parser.add_argument('--soc-pin', default='PH2', help='SoC pin spec to control (e.g. H2, PH2)')
-    parser.add_argument('-c', '--chip', default='gpiochip1', help='GPIO chip device (e.g. gpiochip0 or /dev/gpiochip1)')
-    parser.add_argument('--on-temp', type=float, default=50.0, help='Threshold to turn ON GPIO (≥ this temperature)')
-    parser.add_argument('--off-temp', type=float, default=40.0, help='Threshold to turn OFF GPIO (≤ this temperature)')
-    parser.add_argument('--test-mode', action='store_true', help='Enable heavy calculation simulation (for testing only)')
-    parser.add_argument('-h', '--help', action='store_true', help='Show this help message and exit')
-    args = parser.parse_args()
-
-    if args.help:
-        print_help()
-        sys.exit(0)
+def run_auto_temp_ctrl(
+    interval=5.0,
+    soc_pin='PH2',
+    chip='gpiochip1',
+    on_temp=50.0,
+    off_temp=40.0,
+    test_mode=False,
+    print_help=False
+):
+    """
+    Main entry point for auto_temp_ctrl, callable from Python code.
+    Arguments match CLI options.
+    """
+    if print_help:
+        print_help_func = globals().get('print_help')
+        if print_help_func:
+            print_help_func()
+        else:
+            print("Help function not found.")
+        return
 
     try:
-        offset = parse_offset(args.soc_pin, 'soc')
+        offset = parse_offset(soc_pin, 'soc')
     except ValueError as e:
         print(f"Error parsing soc_pin: {e}")
         sys.exit(1)
 
     stop_event = threading.Event()
-    if args.test_mode:
+    if test_mode:
         thread = threading.Thread(
             target=heavy_calc,
             args=(stop_event,),
@@ -85,7 +88,7 @@ def main():
 
     # Initialize GPIO state: always set to 0 (OFF) at start
     gpio_state = 0
-    send_signal(offset, 0, args.chip)
+    send_signal(offset, 0, chip)
 
     try:
         while True:
@@ -101,20 +104,44 @@ def main():
 
             max_temp = max(float(v) for v in temps.values())
 
-            if max_temp >= args.on_temp and gpio_state == 0:
-                send_signal(offset, 1, args.chip)
+            if max_temp >= on_temp and gpio_state == 0:
+                send_signal(offset, 1, chip)
                 gpio_state = 1
-            elif max_temp <= args.off_temp and gpio_state == 1:
-                send_signal(offset, 0, args.chip)
+            elif max_temp <= off_temp and gpio_state == 1:
+                send_signal(offset, 0, chip)
                 gpio_state = 0
 
-            time.sleep(args.interval)
+            time.sleep(interval)
 
     except KeyboardInterrupt:
         print("\nShutting down...")
     finally:
         # On exit, always reset GPIO to 0 (OFF) and release the line
-        send_signal(offset, 0, args.chip)
+        send_signal(offset, 0, chip)
         stop_event.set()
         if thread:
             thread.join()
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Run CPU load simulation and temperature‐based GPIO control',
+        add_help=False
+    )
+    parser.add_argument('-i', '--interval', type=float, default=5.0, help='Seconds between temperature checks and table refresh')
+    parser.add_argument('--soc-pin', default='PH2', help='SoC pin spec to control (e.g. H2, PH2)')
+    parser.add_argument('-c', '--chip', default='gpiochip1', help='GPIO chip device (e.g. gpiochip0 or /dev/gpiochip1)')
+    parser.add_argument('--on-temp', type=float, default=50.0, help='Threshold to turn ON GPIO (≥ this temperature)')
+    parser.add_argument('--off-temp', type=float, default=40.0, help='Threshold to turn OFF GPIO (≤ this temperature)')
+    parser.add_argument('--test-mode', action='store_true', help='Enable heavy calculation simulation (for testing only)')
+    parser.add_argument('-h', '--help', action='store_true', help='Show this help message and exit')
+    args = parser.parse_args()
+
+    run_auto_temp_ctrl(
+        interval=args.interval,
+        soc_pin=args.soc_pin,
+        chip=args.chip,
+        on_temp=args.on_temp,
+        off_temp=args.off_temp,
+        test_mode=args.test_mode,
+        print_help=args.help
+    )
