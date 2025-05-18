@@ -19,3 +19,4 @@ dependencies = [
 
 [project.scripts]
 auto-temp-gpiod-ctrl = "auto_temp_gpiod_ctrl.main:main"
+auto_temp_ctrl = "auto_temp_gpiod_ctrl.main:main"
