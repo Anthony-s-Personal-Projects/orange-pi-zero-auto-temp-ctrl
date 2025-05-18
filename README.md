@@ -1,124 +1,72 @@
-# Auto Temp Ctrl for Orange Pi Zero 🎉
+# Auto Temp GPIOd Control
 
-Welcome to my first open-source project! 🚀  
-This is a practice project to help me step into the open-source world, and I’m so excited to share it with you.
+Automatic temperature-based GPIO control for any device with libgpiod 2.x support.
 
-This project brings **automatic fan control** to your Orange Pi Zero, making sure your little powerhouse stays cool when needed — and goes silent when it's not.
+## Features
+- Monitors all available temperature sensors using `psutil`
+- Controls a GPIO pin based on user-defined temperature thresholds
+- Displays a live, aligned temperature table in the terminal
+- Optional test mode to simulate CPU load for thermal testing
+- Clean startup/shutdown: always resets GPIO to OFF on exit
 
-It’s simple, useful, and I hope, just the beginning of many projects to come.
+## Requirements
+- Python 3.7+
+- [libgpiod 2.x](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/) and its Python bindings
+- psutil
 
----
+## Installation
 
-## 🎈 Installation (Recommended - via APT)
-
-I've made it super easy for you to install and keep up to date. No fiddling around, just add my APT repo and you're good to go:
-
-```bash
-wget https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/public.key
-sudo apt-key add public.key
-
-echo "deb https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/ ./" | sudo tee /etc/apt/sources.list.d/auto-temp-ctrl.list
-
-sudo apt update
-sudo apt install auto-temp-ctrl
-```
-
----
-
-## 📦 Alternative Installation (Manual via .deb)
-
-If you prefer the old school way or don't want to add the APT repo:
-
-[📥 Download .deb file](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/auto-temp-ctrl.deb)
-
-Then install with:
+Install via pip (recommended):
 
 ```bash
-sudo dpkg -i auto-temp-ctrl.deb
+pip install auto-temp-gpiod-ctrl
 ```
 
-The installer will guide you if WiringOP is missing.
-
----
-
-## 🚦 Usage
+Or from source:
 
 ```bash
-auto-temp-ctrl status
-auto-temp-ctrl show
+git clone https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl.git
+cd orange-pi-zero-auto-temp-ctrl
+pip install .
 ```
 
-You can also tweak your fan behavior by editing:
+## Usage
 
-```
-/etc/auto-temp-ctrl.conf
-```
-
----
-
-## 🔥 Uninstallation
+Run the controller with your desired parameters:
 
 ```bash
-auto-temp-ctrl uninstall
+python -m auto_temp_gpiod_ctrl --on-temp 50 --off-temp 45 --soc-pin PH2
 ```
 
-This will clean up everything nicely.
+Or, if installed as a script:
 
-## 📌 Fan Wiring and Circuit Explanation
+```bash
+auto-temp-gpiod-ctrl --on-temp 50 --off-temp 45 --soc-pin PH2
+```
 
-To safely control the fan using GPIO, a transistor and a flyback diode are used in the circuit.
+### Parameters
+- `-i`, `--interval`   : Seconds between temperature checks and table refresh (default: 5.0)
+- `--soc-pin`          : SoC pin spec to control (e.g. H2, PH2)
+- `-c`, `--chip`       : GPIO chip device (e.g. gpiochip0 or /dev/gpiochip1, default: gpiochip0)
+- `--on-temp`          : Threshold to turn ON GPIO (≥ this temperature, required)
+- `--off-temp`         : Threshold to turn OFF GPIO (≤ this temperature, required)
+- `--test-mode`        : Enable heavy calculation simulation (for testing only)
 
-### 🧠 Why use a Transistor?
+### Example
 
-GPIO pins can only provide very small currents and can't drive the fan directly.  
-A **NPN Transistor** acts like a switch → controlled by GPIO.
+```bash
+python -m auto_temp_gpiod_ctrl --on-temp 60 --off-temp 50 --soc-pin PH2 --test-mode
+```
 
-- GPIO High → Transistor ON → Fan runs
-- GPIO Low → Transistor OFF → Fan stops
+## How it works
+- Reads all temperature sensors and displays a live table
+- Monitors the maximum temperature
+- Sends GPIO output HIGH when max_temp ≥ on_temp, LOW when max_temp ≤ off_temp
+- Optionally simulates CPU load if `--test-mode` is enabled
+- Always resets GPIO to OFF on exit
 
-The resistor (300Ω~1kΩ) limits the current flowing into the transistor's base → protecting GPIO.
-
-### 🛡️ Why use a Flyback Diode?
-
-When the fan turns OFF, it generates a reverse voltage (back EMF).  
-This could damage the transistor or Orange Pi.
-
-A **Flyback Diode** safely diverts this voltage away → protecting your circuit.
-
-### 📊 Full Wiring Diagram
-
-<img src="wiring description.png" alt="Fan Control Wiring Diagram" width="400">
-
-**Pin usage example:**
-
-- VCC-5V (Pin 4) → Fan +
-- GND (Pin 6) → Fan GND via transistor
-- PG6 (Pin 8) → Transistor control (via resistor)
+## License
+MIT
 
 ---
-
----
-
-## 🧰 3D Printable Case (STEP file and design)
-
-Because keeping cool is not just for the CPU 😎.  
-I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner and safer.
-
-<img src="3d model.JPG" alt="3D Case Model" width="400">
-
-[📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
-
----
-
-## ❤️ Why this project?
-
-This is my **first open-source project** and my journey to join this amazing community.  
-I hope this will not only make your Orange Pi Zero run better but also inspire others (and myself) to keep building and sharing.
-
-Thanks for checking this out — if you have ideas, issues, or want to improve it, pull requests and suggestions are welcome!
-
----
-
-## 📜 License
-
-MIT License — because open source should be open and free.
+**Author:** Anthony (<anthonyma24.development@gmail.com>)

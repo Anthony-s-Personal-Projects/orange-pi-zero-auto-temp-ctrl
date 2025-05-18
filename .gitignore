@@ -1,5 +1,7 @@
 *.deb
 *.tar.gz
 *.zip
+*.egg-info
 __pycache__/
 venv/
+dist/

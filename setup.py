@@ -4,8 +4,8 @@ setup(
     name="auto-temp-gpiod-ctrl",
     version="0.1.0",
     description="Automatic temperature-based GPIO control for any libgpiod 2.x device.",
-    author="Your Name",
-    author_email="your@email.com",
+    author="Anthony",
+    author_email="anthonyma24.development@gmail.com",
     packages=find_packages(),
     install_requires=[
         "psutil",
