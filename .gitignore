@@ -162,3 +162,4 @@ $RECYCLE.BIN/
 
 # Debian package files
 *.deb
+*.gz
