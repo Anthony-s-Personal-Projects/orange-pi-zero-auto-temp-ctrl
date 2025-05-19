@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+# Pre-removal script for auto-temp-ctrl
+
+# Remove venv and config if present
+VENV_DIR="/opt/auto-temp-ctrl/venv"
+if [ -d "$VENV_DIR" ]; then
+    rm -rf "$VENV_DIR"
+fi
+if [ -f "/etc/auto-temp-ctrl.conf" ]; then
+    rm -f /etc/auto-temp-ctrl.conf
+fi

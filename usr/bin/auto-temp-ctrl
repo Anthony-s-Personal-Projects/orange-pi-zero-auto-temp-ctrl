@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# auto-temp-ctrl: Wrapper for auto_temp_gpiod_ctrl Python package
+
+VENV_DIR="/opt/auto-temp-ctrl/venv"
+PYTHON="$VENV_DIR/bin/python"
+SCRIPT="-m auto_temp_gpiod_ctrl.main"
+CONFIG_FILE="/etc/auto-temp-ctrl.conf"
+
+function print_help() {
+    cat <<EOF
+Usage: auto-temp-ctrl <command> [options]
+Commands:
+  start         Start the temperature GPIO control service
+  stop          Stop the service
+  restart       Restart the service
+  show          Show current configuration
+  gpio_pin      Set GPIO pin (e.g. PH2)
+  start_temp    Set ON temperature threshold
+  stop_temp     Set OFF temperature threshold
+  help          Show this help message
+  uninstall     Uninstall auto-temp-ctrl, remove venv and libgpiod2
+
+Examples:
+  auto-temp-ctrl start
+  auto-temp-ctrl gpio_pin PH2
+  auto-temp-ctrl start_temp 55
+  auto-temp-ctrl stop_temp 45
+  auto-temp-ctrl uninstall
+EOF
+}
+
+function ensure_venv() {
+    if [ ! -x "$PYTHON" ]; then
+        echo "[auto-temp-ctrl] Python venv not found. Please reinstall the package."
+        exit 1
+    fi
+}
+
+function load_config() {
+    # Default config
+    GPIO_PIN="PH2"
+    START_TEMP="50.0"
+    STOP_TEMP="40.0"
+    if [ -f "$CONFIG_FILE" ]; then
+        source "$CONFIG_FILE"
+    fi
+}
+
+function save_config() {
+    cat > "$CONFIG_FILE" <<EOF
+GPIO_PIN="$GPIO_PIN"
+START_TEMP="$START_TEMP"
+STOP_TEMP="$STOP_TEMP"
+EOF
+}
+
+function start_service() {
+    ensure_venv
+    load_config
+    nohup "$PYTHON" $SCRIPT --soc-pin "$GPIO_PIN" --on-temp "$START_TEMP" --off-temp "$STOP_TEMP" > /var/log/auto-temp-ctrl.log 2>&1 &
+    echo $! > /var/run/auto-temp-ctrl.pid
+    echo "[auto-temp-ctrl] Service started."
+}
+
+function stop_service() {
+    if [ -f /var/run/auto-temp-ctrl.pid ]; then
+        kill $(cat /var/run/auto-temp-ctrl.pid) && rm /var/run/auto-temp-ctrl.pid
+        echo "[auto-temp-ctrl] Service stopped."
+    else
+        echo "[auto-temp-ctrl] Service not running."
+    fi
+}
+
+function show_config() {
+    load_config
+    echo "GPIO_PIN: $GPIO_PIN"
+    echo "START_TEMP: $START_TEMP"
+    echo "STOP_TEMP: $STOP_TEMP"
+}
+
+function uninstall_all() {
+    echo "[auto-temp-ctrl] Stopping service and cleaning up..."
+    stop_service
+    if [ -d "$VENV_DIR" ]; then
+        rm -rf "$VENV_DIR"
+        echo "[auto-temp-ctrl] venv removed."
+    fi
+    if [ -f "$CONFIG_FILE" ]; then
+        rm -f "$CONFIG_FILE"
+        echo "[auto-temp-ctrl] Config removed."
+    fi
+    if dpkg -s libgpiod2 >/dev/null 2>&1; then
+        read -p "Uninstall libgpiod2 (system-wide)? [y/N]: " yn
+        case $yn in
+            [Yy]*) sudo apt-get remove -y libgpiod2;;
+            *) echo "[auto-temp-ctrl] libgpiod2 not removed.";;
+        esac
+    fi
+    echo "[auto-temp-ctrl] Uninstall complete."
+}
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    restart)
+        stop_service
+        start_service
+        ;;
+    gpio_pin)
+        if [[ -z "$2" ]]; then echo "Error: Missing pin. Usage: auto-temp-ctrl gpio_pin <PIN>"; exit 1; fi
+        GPIO_PIN="$2"; save_config; echo "[auto-temp-ctrl] GPIO_PIN set to $2";;
+    start_temp)
+        if [[ -z "$2" ]]; then echo "Error: Missing value. Usage: auto-temp-ctrl start_temp <TEMP>"; exit 1; fi
+        START_TEMP="$2"; save_config; echo "[auto-temp-ctrl] START_TEMP set to $2";;
+    stop_temp)
+        if [[ -z "$2" ]]; then echo "Error: Missing value. Usage: auto-temp-ctrl stop_temp <TEMP>"; exit 1; fi
+        STOP_TEMP="$2"; save_config; echo "[auto-temp-ctrl] STOP_TEMP set to $2";;
+    show)
+        show_config;;
+    help|-h|--help)
+        print_help;;
+    uninstall)
+        uninstall_all;;
+    *)
+        echo "Invalid command. Use 'auto-temp-ctrl help' for usage."
+        exit 1;;
+esac

@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: auto-temp-ctrl
+Source: https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl
+
+Files: *
+Copyright: 2025 Anthony
+License: MIT
