@@ -149,12 +149,13 @@ def send_signal(
                 continue
 
         # Inform the user and exit
-        print(f"Error: offset {line_offset} out of range for {chip_name}.")
+        msg = f"Error: offset {line_offset} out of range for {chip_name}."
         if alt_chip:
-            print(f"Try using chip '{alt_chip}' instead.")
+            msg += f" Try using chip '{alt_chip}' instead."
         else:
-            print("No alternative gpiochip found with sufficient lines.")
-        sys.exit(1)
+            msg += " No alternative gpiochip found with sufficient lines."
+        print(msg, file=sys.stderr)
+        raise RuntimeError(msg)
 
     # If a pulse duration was given, wait then reset to INACTIVE
     if pulse is not None:

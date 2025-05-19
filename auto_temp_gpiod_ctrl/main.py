@@ -39,7 +39,7 @@ def print_help():
       -h, --help              Show this help message and exit
 
     Example:
-      python -m auto_temp_gpiod_ctrl.main --soc-pin PH2 --chip gpiochip1 --on-temp 55 --off-temp 45 --interval 3
+      python -m auto_temp_gpiod_ctrl --soc-pin PH2 --chip gpiochip1 --on-temp 55 --off-temp 45 --interval 3
 
     Notes:
       - The GPIO pin will always be set to OFF (0) at startup and shutdown for safety.
@@ -72,8 +72,8 @@ def run_auto_temp_ctrl(
     try:
         offset = parse_offset(soc_pin, 'soc')
     except ValueError as e:
-        print(f"Error parsing soc_pin: {e}")
-        sys.exit(1)
+        print(f"Error parsing soc_pin: {e}", file=sys.stderr)
+        raise RuntimeError(f"Error parsing soc_pin: {e}. Hint: Check your --soc-pin argument or try another available pin.")
 
     stop_event = threading.Event()
     if test_mode:
@@ -88,7 +88,11 @@ def run_auto_temp_ctrl(
 
     # Initialize GPIO state: always set to 0 (OFF) at start
     gpio_state = 0
-    send_signal(offset, 0, chip)
+    try:
+        send_signal(offset, 0, chip)
+    except Exception as e:
+        print(f"Failed to initialize GPIO line (chip: {chip}, pin: {soc_pin}): {e}", file=sys.stderr)
+        raise RuntimeError(f"Failed to initialize GPIO line (chip: {chip}, pin: {soc_pin}): {e}. Hint: Try another --chip value (e.g., gpiochip0, gpiochip1) or check your permissions.")
 
     try:
         while True:
@@ -105,18 +109,21 @@ def run_auto_temp_ctrl(
             max_temp = max(float(v) for v in temps.values())
 
             if max_temp >= on_temp and gpio_state == 0:
-                send_signal(offset, 1, chip)
-                gpio_state = 1
+                try:
+                    send_signal(offset, 1, chip)
+                    gpio_state = 1
+                except Exception as e:
+                    print(f"Failed to set GPIO ON: {e}", file=sys.stderr)
+                    raise RuntimeError(f"Failed to set GPIO ON: {e}. Hint: Try another --chip value or check your wiring.")
             elif max_temp <= off_temp and gpio_state == 1:
-                send_signal(offset, 0, chip)
-                gpio_state = 0
-
-            time.sleep(interval)
-
-    except KeyboardInterrupt:
-        print("\nShutting down...")
+                try:
+                    send_signal(offset, 0, chip)
+                    gpio_state = 0
+                except Exception as e:
+                    print(f"Failed to set GPIO OFF: {e}", file=sys.stderr)
+                    raise RuntimeError(f"Failed to set GPIO OFF: {e}. Hint: Try another --chip value or check your wiring.")
     finally:
-        # On exit, always reset GPIO to 0 (OFF) and release the line
+        # On any exit, always reset GPIO to 0 (OFF) and release the line
         send_signal(offset, 0, chip)
         stop_event.set()
         if thread:

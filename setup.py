@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="auto-temp-gpiod-ctrl",
-    version="0.1.0",
+    version="0.1.1",
     description="Automatic temperature-based GPIO control for any libgpiod 2.x device.",
     author="Anthony",
     author_email="anthonyma24.development@gmail.com",

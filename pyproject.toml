@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auto-temp-gpiod-ctrl"
-version = "0.1.0"
+version = "0.1.1"
 description = "Automatic temperature-based GPIO control for any libgpiod 2.x device."
 authors = [
   { name="Anthony", email="anthonyma24.development@gmail.com" }

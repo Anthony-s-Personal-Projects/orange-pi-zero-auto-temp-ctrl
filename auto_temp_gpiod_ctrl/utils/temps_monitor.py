@@ -13,6 +13,7 @@ refreshing every `interval` seconds until interrupted.
 import psutil
 import time
 import os
+import sys
 
 # ----------------------------------------------------------------------------
 # Clear the terminal screen
@@ -53,8 +54,8 @@ def monitor(interval: float = 5.0):
     """
     initial = fetch_temps()
     if not initial:
-        print("No temperature sensors found.")
-        return
+        print("No temperature sensors found.", file=sys.stderr)
+        raise RuntimeError("No temperature sensors found.")
 
     # Prepare table headers and column widths
     headers = list(initial.keys())
