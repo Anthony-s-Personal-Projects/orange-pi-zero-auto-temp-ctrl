@@ -53,7 +53,7 @@ fi
 source "$VENV_DIR/bin/activate"
 
 pip install --upgrade pip && echo "✅ pip is up to date."
-pip install "$PY_MODULE" && echo "✅ $PY_MODULE is installed in the venv."
+pip install --upgrade --force-reinstall "$PY_MODULE" && echo "✅ $PY_MODULE is installed in the venv."
 
 # Config file
 if [ ! -f /etc/auto-temp-ctrl/auto-temp-ctrl.conf ]; then
