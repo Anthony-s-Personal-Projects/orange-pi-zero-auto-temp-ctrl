@@ -8,6 +8,23 @@ function start_service() {
 }
 
 function stop_service() {
+    # Explicitly send SIGTERM to the main process if running
+    local pid
+    pid=$(systemctl show -p MainPID --value "$SERVICE_NAME")
+    echo "[auto-temp-ctrl] Checking MainPID: $pid"
+    if [[ "$pid" =~ ^[0-9]+$ && "$pid" -ne 0 ]]; then
+        echo "[auto-temp-ctrl] Sending SIGTERM to PID $pid..."
+        kill -TERM "$pid"
+        sleep 1
+        if kill -0 "$pid" 2>/dev/null; then
+            echo "[auto-temp-ctrl] Warning: PID $pid still running after SIGTERM."
+        else
+            echo "[auto-temp-ctrl] PID $pid terminated by SIGTERM."
+        fi
+    else
+        echo "[auto-temp-ctrl] No running MainPID found."
+    fi
+    echo "[auto-temp-ctrl] Calling systemctl stop $SERVICE_NAME..."
     systemctl stop "$SERVICE_NAME"
     echo "auto-temp-ctrl service stopped."
 }
