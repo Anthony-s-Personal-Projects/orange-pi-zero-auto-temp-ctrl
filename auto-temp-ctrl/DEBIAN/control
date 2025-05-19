@@ -1,9 +1,0 @@
-Package: auto-temp-ctrl
-Version: 1.0.0
-Section: utils
-Priority: optional
-Architecture: all
-Maintainer: Anthony <anthonyma24.development@gmail.com>
-Depends: build-essential, autoconf, automake, libtool, pkg-config, wget, python3, python3-venv
-Description: Automatic temperature control for Orange Pi using GPIO and gpiod.
- Includes a wrapper CLI, config manager, and systemd service.

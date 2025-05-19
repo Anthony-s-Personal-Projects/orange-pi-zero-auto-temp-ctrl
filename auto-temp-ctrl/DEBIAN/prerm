@@ -1,4 +1,0 @@
-#!/bin/bash
-set -e
-systemctl stop auto-temp-ctrl.service || true
-systemctl disable auto-temp-ctrl.service || true
