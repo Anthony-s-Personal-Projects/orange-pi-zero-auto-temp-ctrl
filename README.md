@@ -25,8 +25,23 @@ Automatic temperature-based GPIO control for any device with libgpiod 2.x suppor
 
 ## Installation (Debian Package)
 
-1. **Install libgpiod 2.x** (if not already installed):
-   - Use your package manager or build from source if needed.
+1. **Install libgpiod 2.x** (required):
+   - On Debian/Ubuntu (if available):
+     ```bash
+     sudo apt-get update
+     sudo apt-get install libgpiod2 gpiod
+     ```
+   - **Or, build from source (if your distro does not provide libgpiod 2.x):**
+     ```bash
+     cd ~
+     wget https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/libgpiod-2.1.3.tar.xz
+     tar -xf libgpiod-2.1.3.tar.xz
+     cd libgpiod-2.1.3
+     ./configure --enable-tools
+     make
+     sudo make install
+     sudo ldconfig
+     ```
 
 2. **Install the .deb package:**
    ```bash
@@ -40,6 +55,17 @@ Automatic temperature-based GPIO control for any device with libgpiod 2.x suppor
    - Install the latest `auto_temp_gpiod_ctrl` Python module
    - Copy a default config to `/etc/auto-temp-ctrl/auto-temp-ctrl.conf` (if not present)
    - Install and start the systemd service
+
+## Alternative: Direct .deb Download and Install
+
+If you do not have the .deb file locally, you can download and install it directly:
+
+```bash
+wget https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/auto-temp-ctrl.deb
+sudo dpkg -i auto-temp-ctrl.deb
+```
+
+This will install the package manually. You may need to run `sudo apt-get install -f` afterwards to resolve any missing dependencies.
 
 ## Configuration
 
