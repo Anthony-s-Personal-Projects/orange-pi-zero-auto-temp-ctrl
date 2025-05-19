@@ -4,6 +4,13 @@ import threading
 import sys
 import time
 import argparse
+import signal
+
+def handle_sigterm(signum, frame):
+    print("Received SIGTERM, shutting down gracefully...")
+    raise SystemExit(0)
+
+signal.signal(signal.SIGTERM, handle_sigterm)
 
 def heavy_calc(stop_event: threading.Event):
     """
