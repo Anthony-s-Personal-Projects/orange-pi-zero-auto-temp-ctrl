@@ -1,0 +1,19 @@
+[Unit]
+Description=Auto Temperature Control Service
+After=network.target
+
+[Service]
+Type=simple
+# Load config vars, then exec the venv binary with proper args
+ExecStart=/bin/bash -c '\
+    source /etc/auto-temp-ctrl/auto-temp-ctrl.conf && \
+    exec /opt/auto-temp-ctrl-venv/bin/auto-temp-gpiod-ctrl \
+        --soc-pin "$soc_pin" \
+        -c "$chip" \
+        --on-temp "$on_temp" \
+        --off-temp "$off_temp" \
+'
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

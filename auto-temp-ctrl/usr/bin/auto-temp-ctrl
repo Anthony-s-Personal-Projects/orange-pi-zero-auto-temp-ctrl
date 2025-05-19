@@ -1,0 +1,109 @@
+#!/bin/bash
+SERVICE_NAME="auto-temp-ctrl.service"
+CONFIG_FILE="/etc/auto-temp-ctrl/auto-temp-ctrl.conf"
+
+function start_service() {
+    systemctl start "$SERVICE_NAME"
+    echo "auto-temp-ctrl service started."
+}
+
+function stop_service() {
+    systemctl stop "$SERVICE_NAME"
+    echo "auto-temp-ctrl service stopped."
+}
+
+function status_service() {
+    systemctl status "$SERVICE_NAME"
+}
+
+function show_config() {
+    cat "$CONFIG_FILE"
+}
+
+function set_param() {
+    local key="$1"
+    local value="$2"
+    if [[ "$key" != "soc_pin" && "$key" != "chip" && "$key" != "on_temp" && "$key" != "off_temp" ]]; then
+        echo "Invalid key: $key"
+        exit 1
+    fi
+    if grep -q "^$key=" "$CONFIG_FILE"; then
+        sed -i "s|^$key=.*|$key=$value|" "$CONFIG_FILE"
+    else
+        echo "$key=$value" >>"$CONFIG_FILE"
+    fi
+    systemctl restart "$SERVICE_NAME"
+    echo "Set $key to $value and restarted the service."
+}
+
+function uninstall_all() {
+    echo "Stopping and disabling service..."
+    systemctl stop "$SERVICE_NAME"
+    systemctl disable "$SERVICE_NAME"
+    rm -f "/etc/systemd/system/$SERVICE_NAME"
+    systemctl daemon-reload
+
+    echo "Removing virtual environment..."
+    rm -rf "$VENV_DIR"
+
+    echo "Removing config file..."
+    rm -f "$CONFIG_FILE"
+
+    echo "Removing this wrapper script..."
+    rm -f "$0"
+
+    echo
+    echo "Uninstalled auto-temp-ctrl and removed service/config/venv."
+    echo
+
+    echo "Did you install libgpiod from source just for auto-temp-ctrl?"
+    echo "Would you like to remove all source-installed libgpiod files from /usr/local/? (Y/n)"
+    read -r response
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ || -z "$response" ]]; then
+        echo "Removing libgpiod files from /usr/local/ ..."
+        rm -f /usr/local/bin/gpio*
+        rm -f /usr/local/bin/gpiod*
+        rm -f /usr/local/lib/libgpiod*
+        rm -f /usr/local/lib/pkgconfig/libgpiod*
+        rm -rf /usr/local/include/gpiod
+        rm -f /usr/local/share/man/man1/gpio*
+        rm -f /usr/local/share/man/man1/gpiod*
+        rm -f /usr/local/share/man/man7/gpiod*
+        ldconfig
+        echo "✅ libgpiod files removed from /usr/local/"
+    else
+        echo "libgpiod files NOT removed."
+    fi
+
+    echo
+    echo "Running apt-get autoremove to clean up any unneeded packages..."
+    apt-get autoremove -y
+
+    echo "Uninstallation complete."
+}
+
+
+case "$1" in
+    start)
+        start_service
+        ;;
+    stop)
+        stop_service
+        ;;
+    status)
+        status_service
+        ;;
+    show)
+        show_config
+        ;;
+    uninstall)
+        uninstall_all
+        ;;
+    soc_pin|chip|on_temp|off_temp)
+        set_param "$1" "$2"
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|status|show|uninstall|soc_pin <val>|chip <val>|on_temp <val>|off_temp <val>}"
+        exit 1
+        ;;
+esac
