@@ -1,124 +1,124 @@
-# Auto Temp Ctrl for Orange Pi Zero 🎉
+# Auto Temp GPIOd Control (Debian Package)
 
-Welcome to my first open-source project! 🚀  
-This is a practice project to help me step into the open-source world, and I’m so excited to share it with you.
+**v0.1.2+ — Now uses libgpiod instead of WiringOP for GPIO control!**
 
-This project brings **automatic fan control** to your Orange Pi Zero, making sure your little powerhouse stays cool when needed — and goes silent when it's not.
-
-It’s simple, useful, and I hope, just the beginning of many projects to come.
+This version is designed for maximum compatibility with modern Orange Pi, Raspberry Pi, and other SBCs that support [libgpiod 2.x](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/). By switching from WiringOP to libgpiod, this project works on a much wider range of boards and Linux kernels, and is not limited to legacy Orange Pi models. WiringOP is no longer required or supported.
 
 ---
 
-## 🎈 Installation (Recommended - via APT)
+Automatic temperature-based GPIO control for any device with libgpiod 2.x support, packaged for easy installation and robust management as a systemd service on Debian-based systems.
 
-I've made it super easy for you to install and keep up to date. No fiddling around, just add my APT repo and you're good to go:
+## Features
+- Monitors all available temperature sensors using `psutil`
+- Controls a GPIO pin based on user-defined temperature thresholds
+- Runs as a robust systemd service with automatic restart and clean shutdown
+- Uses a dedicated Python venv for isolation
+- All configuration in `/etc/auto-temp-ctrl/auto-temp-ctrl.conf`
+- Logs actions and errors for easy troubleshooting
+- Clean uninstall and upgrade support
+
+## Requirements
+- Debian/Ubuntu or compatible OS
+- Python 3.7+
+- [libgpiod 2.x](https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git/) and its Python bindings
+- psutil (installed automatically in venv)
+
+## Installation (Debian Package)
+
+1. **Install libgpiod 2.x** (required):
+   - On Debian/Ubuntu (if available):
+     ```bash
+     sudo apt-get update
+     sudo apt-get install libgpiod2 gpiod
+     ```
+   - **Or, build from source (if your distro does not provide libgpiod 2.x):**
+     ```bash
+     cd ~
+     wget https://mirrors.edge.kernel.org/pub/software/libs/libgpiod/libgpiod-2.1.3.tar.xz
+     tar -xf libgpiod-2.1.3.tar.xz
+     cd libgpiod-2.1.3
+     ./configure --enable-tools
+     make
+     sudo make install
+     sudo ldconfig
+     ```
+
+2. **Install the .deb package:**
+   ```bash
+   sudo dpkg -i auto-temp-ctrl.deb
+   # If dependencies are missing, run:
+   sudo apt-get install -f
+   ```
+   The installer will:
+   - Check for libgpiod 2.x
+   - Set up a Python venv in `/opt/auto-temp-ctrl-venv`
+   - Install the latest `auto_temp_gpiod_ctrl` Python module
+   - Copy a default config to `/etc/auto-temp-ctrl/auto-temp-ctrl.conf` (if not present)
+   - Install and start the systemd service
+
+## Alternative: Direct .deb Download and Install
+
+If you do not have the .deb file locally, you can download and install it directly:
 
 ```bash
-wget https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/public.key
-sudo apt-key add public.key
-
-echo "deb https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/ ./" | sudo tee /etc/apt/sources.list.d/auto-temp-ctrl.list
-
-sudo apt update
-sudo apt install auto-temp-ctrl
-```
-
----
-
-## 📦 Alternative Installation (Manual via .deb)
-
-If you prefer the old school way or don't want to add the APT repo:
-
-[📥 Download .deb file](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/auto-temp-ctrl.deb)
-
-Then install with:
-
-```bash
+wget https://anthony-s-personal-projects.github.io/orange-pi-zero-auto-temp-ctrl/auto-temp-ctrl.deb
 sudo dpkg -i auto-temp-ctrl.deb
 ```
 
-The installer will guide you if WiringOP is missing.
+This will install the package manually. You may need to run `sudo apt-get install -f` afterwards to resolve any missing dependencies.
 
----
+## Configuration
 
-## 🚦 Usage
+Edit `/etc/auto-temp-ctrl/auto-temp-ctrl.conf` to set your parameters:
 
+```
+soc_pin=PH2
+chip=gpiochip1
+on_temp=50
+off_temp=40
+```
+- `soc_pin`: SoC pin to control (e.g. PH2)
+- `chip`: GPIO chip device (e.g. gpiochip0, gpiochip1)
+- `on_temp`: Temperature (°C) to turn ON GPIO (required)
+- `off_temp`: Temperature (°C) to turn OFF GPIO (required)
+
+## Service Management
+
+The service is managed by systemd:
+
+- **Check status:**
+  ```bash
+  sudo systemctl status auto-temp-ctrl.service
+  ```
+- **Restart after config change:**
+  ```bash
+  sudo systemctl restart auto-temp-ctrl.service
+  ```
+- **Stop the service:**
+  ```bash
+  sudo systemctl stop auto-temp-ctrl.service
+  ```
+- **View logs:**
+  ```bash
+  journalctl -u auto-temp-ctrl.service -e
+  ```
+
+## Uninstall
+
+To remove the package and all related files:
 ```bash
-auto-temp-ctrl status
-auto-temp-ctrl show
+sudo apt-get remove auto-temp-ctrl
 ```
+This will stop the service, remove the venv, config, and all installed files.
 
-You can also tweak your fan behavior by editing:
+## How it works
+- Reads all temperature sensors and monitors the maximum
+- Sends GPIO output HIGH when max_temp ≥ on_temp, LOW when max_temp ≤ off_temp
+- Always resets GPIO to OFF on exit or service stop
+- All errors and actions are logged for troubleshooting
 
-```
-/etc/auto-temp-ctrl.conf
-```
-
----
-
-## 🔥 Uninstallation
-
-```bash
-auto-temp-ctrl uninstall
-```
-
-This will clean up everything nicely.
-
-## 📌 Fan Wiring and Circuit Explanation
-
-To safely control the fan using GPIO, a transistor and a flyback diode are used in the circuit.
-
-### 🧠 Why use a Transistor?
-
-GPIO pins can only provide very small currents and can't drive the fan directly.  
-A **NPN Transistor** acts like a switch → controlled by GPIO.
-
-- GPIO High → Transistor ON → Fan runs
-- GPIO Low → Transistor OFF → Fan stops
-
-The resistor (300Ω~1kΩ) limits the current flowing into the transistor's base → protecting GPIO.
-
-### 🛡️ Why use a Flyback Diode?
-
-When the fan turns OFF, it generates a reverse voltage (back EMF).  
-This could damage the transistor or Orange Pi.
-
-A **Flyback Diode** safely diverts this voltage away → protecting your circuit.
-
-### 📊 Full Wiring Diagram
-
-<img src="wiring description.png" alt="Fan Control Wiring Diagram" width="400">
-
-**Pin usage example:**
-
-- VCC-5V (Pin 4) → Fan +
-- GND (Pin 6) → Fan GND via transistor
-- PG6 (Pin 8) → Transistor control (via resistor)
+## License
+MIT
 
 ---
-
----
-
-## 🧰 3D Printable Case (STEP file and design)
-
-Because keeping cool is not just for the CPU 😎.  
-I've also designed a 3D printable case to make your Orange Pi Zero setup cleaner and safer.
-
-<img src="3d model.JPG" alt="3D Case Model" width="400">
-
-[📥 Download STEP File](https://github.com/Anthony-s-Personal-Projects/orange-pi-zero-auto-temp-ctrl/releases/download/v1.0/Orange-Pi-Zero-Case.step)
-
----
-
-## ❤️ Why this project?
-
-This is my **first open-source project** and my journey to join this amazing community.  
-I hope this will not only make your Orange Pi Zero run better but also inspire others (and myself) to keep building and sharing.
-
-Thanks for checking this out — if you have ideas, issues, or want to improve it, pull requests and suggestions are welcome!
-
----
-
-## 📜 License
-
-MIT License — because open source should be open and free.
+**Author:** Anthony (<anthonyma24.development@gmail.com>)
